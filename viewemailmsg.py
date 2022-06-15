@@ -46,8 +46,14 @@ for msg in message:
         filename = dict
         fullpath = os.path.join(path,filename)
         content = msg.snippet
-        with open(fullpath, "w+") as f:
-            f.write(content)
+        isExist = os.path.exists(fullpath)
+        if not isExist:
+            with open(fullpath, "w+") as f:
+                f.write(content)
+        else:
+            with open(fullpath, "a+") as f:
+                f.write('\n')
+                f.write(content)
 
             attc_id = []
             attc_name = []
