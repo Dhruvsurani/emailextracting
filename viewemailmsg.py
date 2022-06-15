@@ -1,10 +1,18 @@
+import os
+from pathlib import Path
+
 from nylas import APIClient
 import pandas as pd
 import csv 
+import pathlib
 
-CLIENT_ID = 'as3q8u0qqcaqukse3y9eklk31'
-CLIENT_SECRET = '8v6tzx3g61rcka0on5aoqhuve'
-ACCESS_TOKEN = 'oCr6vR2m42tFYVZeUd0l1iDMhLNuOX'
+# CLIENT_ID = 'as3q8u0qqcaqukse3y9eklk31'
+# CLIENT_SECRET = '8v6tzx3g61rcka0on5aoqhuve'
+# ACCESS_TOKEN = 'isMm80S234tMwBCgzUde69sQ302kvt'
+
+CLIENT_ID = '7g5iy280uugmjm20ribmzazsi'
+CLIENT_SECRET = '7po3zsxop1atyk5sa70xjz1j6'
+ACCESS_TOKEN = 'ssgfkM4zSDQCMojO3QPKwLX5csSvwX'
 nylas = APIClient(
     CLIENT_ID,
     CLIENT_SECRET,
@@ -13,33 +21,53 @@ nylas = APIClient(
 
 
 message = nylas.messages.all()
-for msg in message:
-    Subject = msg.subject
-    Unread = msg.unread
-    From = msg.from_
-    ID = msg.id
-    data = [Subject,Unread,From,ID]
-    df = pd.DataFrame(data)
-  
-    filename = 'email_detail.csv'
-    with open(filename, 'w') as csvfile: 
-    # creating a csv writer object 
-        csvwriter = csv.writer(csvfile) 
- 
-        
-    # writing the data rows 
-        csvwriter.writerows(data)
-# print("Subject: {} | Unread: {} | from: {} | ID: {}".format(
-#     message.subject, message.unread, message.from_, message.id
-# ))
 
-threads = nylas.threads.all(limit=10) 
-for thread in threads:
-    Subject=thread.subject
-    Participants=thread.participants
-    # data = {'Subject':thread.subject,'Participants':thread.participants}
-    data = [Subject,Participants]
-    df = pd.DataFrame(data)
-    
-    df.to_csv('file1.csv')
-    # print("Subject: {} | Participants: {}".format(thread.subject, thread.participants))
+for msg in message:
+    data = {'subject:': msg.subject,1:msg.from_,'to:':msg.to,'account_id':msg.account_id ,'snippet':msg.snippet,'files:':msg.files}
+    print(data)
+    if data['files:'] is None:
+        pass
+    else:
+        dict = []
+        for i in msg.from_:
+            dict = i['email']
+            print(dict)
+
+
+        path_dir = 'attachment_dir/'
+        path = os.path.join(path_dir,dict)
+        checkpath = (path)
+            # Check whether the specified path exists or not
+        isExist = os.path.exists(checkpath)
+        if not isExist:
+                # Create a new directory because it does not exist
+            os.mkdir(path)
+
+        filename = dict
+        fullpath = os.path.join(path,filename)
+        content = msg.snippet
+        with open(fullpath, "w+") as f:
+            f.write(content)
+
+            attc_id = []
+            attc_name = []
+            for i in msg.files:
+                attc_id = i['id']
+                attc_name = i['filename']
+                ns = nylas.files.get(attc_id)
+                fl_code = ns.download()
+
+                fullpath = os.path.join(path, str(attc_name))
+                isExist = os.path.exists(fullpath)
+                if not isExist:
+                    with open(fullpath, "wb") as f:
+                        f.write(fl_code)
+
+
+
+
+# ns = nylas.files.get("91ocd28j4967012t8zs5p3xf3")
+# ns.download()
+# fl_code = ns.download()
+# with open("cursed-child-US.jpg", "wb") as f:
+#     f.write(fl_code)
